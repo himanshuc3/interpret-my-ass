@@ -46,6 +46,9 @@ type Token struct {
 	Literal string
 }
 
+// NOTE:
+// 1. Can be removed in favor of a global variable since global
+// map constants aren't allowed in go
 func GenerateTokenMapping() map[TokenType]Token {
 
 	// NOTE:
