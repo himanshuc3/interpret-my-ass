@@ -1,80 +1,26 @@
 package token
 
-// NOTE:
-// 1. const ILLEGAL string = "ILLEGAL" - explicit const
-// Btw, very og syntax with let and const. Well, ackshually
-// technically, it was included in ES6 spec in JS, so it might
-// have been copied from golang to js
-const (
-	ILLEGAL = "ILLEGAL"
-	EOF     = "EOF"
-
-	// Identifiers + literals
-	IDENT = "IDENT"
-	INT   = "INT"
-
-	// Operators
-	ASSIGN = "="
-	PLUS   = "+"
-
-	// Delimiters
-	COMMA     = ","
-	SEMICOLON = ";"
-
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
-
-	// Keywords
-	FUNCTION = "FUNCTION"
-	LET      = "LET"
-)
+import "fmt"
 
 // NOTE:
-// 1. In go, a const can only be a compile time constant like
-// number string, boolean
-var TokenMapping map[TokenType]Token = GenerateTokenMapping()
-
-// NOTE:
-// 1. token type is declared as string instead of int/byte which
-// might be better for performance and provide space gains
-type TokenType string
-
+// 1. What is the difference between lexel and object?
+// 2. Go stringer tool - helps autogenerate Stringer interface on structs
 type Token struct {
-	Type    TokenType
-	Literal string
+	TokenType TokenType
+	Lexeme    string
+	Object    any
+	Line      int
 }
 
 // NOTE:
-// 1. Can be removed in favor of a global variable since global
-// map constants aren't allowed in go
-func GenerateTokenMapping() map[TokenType]Token {
-
-	// NOTE:
-	// 1. Dynamic property names like in JS [COMMA]
-	tokens := map[TokenType]Token{
-		ASSIGN: {
-			Type: ASSIGN,
-		},
-		SEMICOLON: {
-			Type: SEMICOLON,
-		},
-		LPAREN: {
-			Type: LPAREN,
-		},
-		COMMA: {
-			Type: COMMA,
-		},
-		PLUS: {
-			Type: PLUS,
-		},
-		LBRACE: {
-			Type: LBRACE,
-		},
-		RBRACE: {
-			Type: RBRACE,
-		},
+// 1. Factory pattern: Commonly used as constructor for
+// objects that require initialization
+func NewToken(tokenType TokenType, lexeme string, literal any, line int) Token {
+	return Token{
+		tokenType, lexeme, literal, line,
 	}
-	return tokens
+}
+
+func (t *Token) String() string {
+	return fmt.Sprintf("%s %s %v", t.TokenType, t.Lexeme, t.Object)
 }
