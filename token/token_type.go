@@ -1,3 +1,4 @@
+//go:generate stringer -type=TokenType -trimprefix=TokenType_
 package token
 
 // NOTE:
@@ -13,6 +14,10 @@ type TokenType int
 // Btw, very og syntax with let and const. Well, ackshually
 // technically, it was included in ES6 spec in JS, so it might
 // have been copied from golang to js
+// 2. No enumeration type in go, so we use iota to generate a sequence of
+// 3. Generating string readable representation of enum (useful for debugging)
+// Basically TokenType_LEFT_PAREN = "LEFT_PAREN
+// 4. Special argument = ./... like -r for recursion of directiories
 const (
 	// Single-character tokens
 	TokenType_LEFT_PAREN TokenType = iota
@@ -64,37 +69,37 @@ const (
 // NOTE:
 // 1. In go, a const can only be a compile time constant like
 // number string, boolean
-var TokenMapping map[TokenType]Token = GenerateTokenMapping()
+// var TokenMapping map[TokenType]Token = GenerateTokenMapping()
 
 // NOTE:
 // 1. Can be removed in favor of a global variable since global
 // map constants aren't allowed in go
-func GenerateTokenMapping() map[TokenType]Token {
+// func GenerateTokenMapping() map[TokenType]Token {
 
-	// NOTE:
-	// 1. Dynamic property names like in JS [COMMA]
-	tokens := map[TokenType]Token{
-		ASSIGN: {
-			Type: ASSIGN,
-		},
-		SEMICOLON: {
-			Type: SEMICOLON,
-		},
-		LPAREN: {
-			Type: LPAREN,
-		},
-		COMMA: {
-			Type: COMMA,
-		},
-		PLUS: {
-			Type: PLUS,
-		},
-		LBRACE: {
-			Type: LBRACE,
-		},
-		RBRACE: {
-			Type: RBRACE,
-		},
-	}
-	return tokens
-}
+// 	// NOTE:
+// 	// 1. Dynamic property names like in JS [COMMA]
+// 	tokens := map[TokenType]Token{
+// 		ASSIGN: {
+// 			Type: ASSIGN,
+// 		},
+// 		SEMICOLON: {
+// 			Type: SEMICOLON,
+// 		},
+// 		LPAREN: {
+// 			Type: LPAREN,
+// 		},
+// 		COMMA: {
+// 			Type: COMMA,
+// 		},
+// 		PLUS: {
+// 			Type: PLUS,
+// 		},
+// 		LBRACE: {
+// 			Type: LBRACE,
+// 		},
+// 		RBRACE: {
+// 			Type: RBRACE,
+// 		},
+// 	}
+// 	return tokens
+// }
