@@ -121,11 +121,37 @@ func (s *Scanner) scanToken() {
 	case ' ', '\r', '\t':
 		// Task: handle characters
 
+	case '\n':
+		s.line++
+	case '"':
+		s.scanString()
+
 	default:
 		s.hadError = true
 		s.report(s.line, "", fmt.Sprintf("Unexpected character: %c", c))
 
 	}
+}
+
+func (s *Scanner) scanString() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		s.hadError = true
+		s.report(s.line, "", "Unterminated string.")
+		return
+	}
+
+	// The closing "
+	s.advance()
+
+	value := string(s.source[s.start+1 : s.current-1])
+	s.addTokenWithLiteral(token.TokenType_STRING, value)
 }
 
 func (s *Scanner) ReportError(line int, msg string) {
