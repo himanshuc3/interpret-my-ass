@@ -3,6 +3,7 @@ package scanner
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/himanshuc3/interpret-my-ass/token"
 )
@@ -127,8 +128,12 @@ func (s *Scanner) scanToken() {
 		s.scanString()
 
 	default:
-		s.hadError = true
-		s.report(s.line, "", fmt.Sprintf("Unexpected character: %c", c))
+		if isDigit(c) {
+			s.scanNumber()
+		} else {
+			s.hadError = true
+			s.report(s.line, "", fmt.Sprintf("Unexpected character: %c", c))
+		}
 
 	}
 }
@@ -207,4 +212,41 @@ func (s *Scanner) addTokenWithLiteral(tokenType token.TokenType, literal any) {
 		Object:    literal,
 		Line:      s.line,
 	})
+}
+
+func isDigit(c rune) bool {
+	return c >= '0' && c <= '9'
+}
+
+func (s *Scanner) scanNumber() {
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+
+	if s.peek() == '.' && isDigit(s.peekNext()) {
+		s.advance()
+
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+
+	text := string(s.source[s.start:s.current])
+	// Task: Report a parsing error if an error with parsing number
+	num, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		// Task: Use the built-in error interfrace
+		// instead of plain string literals
+		s.ReportError(s.line, "Invalid number literal")
+	}
+	s.addTokenWithLiteral(token.TokenType_NUMBER, num)
+
+}
+
+func (s *Scanner) peekNext() rune {
+	if s.current+1 >= len(s.source) {
+		return '\000'
+	}
+
+	return s.source[s.current+1]
 }
