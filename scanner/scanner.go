@@ -9,6 +9,10 @@ import (
 	"github.com/himanshuc3/interpret-my-ass/token"
 )
 
+// NOTE:
+// 1. Nuances handling newlines in tokenization parsing
+// 2. Chomsky heirarchy - parsing and AST
+
 type Scanner struct {
 	// Task: replace string with []rune to have a more
 	// general implementation of the interpreter
@@ -117,12 +121,9 @@ func (s *Scanner) scanToken() {
 			s.consumeLineComment()
 		} else if s.match('*') {
 			s.consumeMultiLineComment()
+		} else {
+			s.addToken(token.TokenType_SLASH)
 		}
-
-		// Task: skip a comment line
-		// } else {
-		s.addToken(token.TokenType_SLASH)
-		// }
 	case ' ', '\r', '\t':
 		// Task: handle characters
 
@@ -151,12 +152,24 @@ func (s *Scanner) consumeLineComment() {
 }
 
 func (s *Scanner) consumeMultiLineComment() {
-	for s.peek() != '*' && !s.isAtEnd() {
-		if s.peek() == '\n' {
+
+	for !s.isAtEnd() {
+
+		switch c := s.peek(); c {
+		case '\n':
 			s.line++
+			s.advance()
+		case '*':
+			if s.peekNext() == '/' {
+				s.current += 2
+				return
+			}
+		default:
+			s.advance()
 		}
-		s.advance()
+
 	}
+	s.ReportError(s.line, errors.ErrUnterminatedMultilineComment)
 
 }
 

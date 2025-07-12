@@ -1,0 +1,7 @@
+var test = 2
+
+/* Token parsing is probably 
+    the most boring stage in writing 
+    an interpreter
+*/
+test = 42
