@@ -1,9 +1,10 @@
 package scanner
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
+
+	"github.com/himanshuc3/interpret-my-ass/errors"
 
 	"github.com/himanshuc3/interpret-my-ass/token"
 )
@@ -111,14 +112,17 @@ func (s *Scanner) scanToken() {
 			s.addToken(token.TokenType_GREATER)
 		}
 	case '/':
-		// Task: skip a comment line
+
 		if s.match('/') {
-			for s.peek() != '\n' && !s.isAtEnd() {
-				s.advance()
-			}
-		} else {
-			s.addToken(token.TokenType_SLASH)
+			s.consumeLineComment()
+		} else if s.match('*') {
+			s.consumeMultiLineComment()
 		}
+
+		// Task: skip a comment line
+		// } else {
+		s.addToken(token.TokenType_SLASH)
+		// }
 	case ' ', '\r', '\t':
 		// Task: handle characters
 
@@ -130,12 +134,51 @@ func (s *Scanner) scanToken() {
 	default:
 		if isDigit(c) {
 			s.scanNumber()
+		} else if isAlpha(c) {
+			s.scanIdentifier()
 		} else {
 			s.hadError = true
-			s.report(s.line, "", fmt.Sprintf("Unexpected character: %c", c))
+			s.report(s.line, "", errors.ErrUnexpectedCharacter(c))
 		}
 
 	}
+}
+
+func (s *Scanner) consumeLineComment() {
+	for s.peek() != '\n' && !s.isAtEnd() {
+		s.advance()
+	}
+}
+
+func (s *Scanner) consumeMultiLineComment() {
+	for s.peek() != '*' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+}
+
+func (s *Scanner) scanIdentifier() {
+	for isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	text := string(s.source[s.start:s.current])
+	if t, ok := token.IsKeyword(text); ok {
+		s.addToken(t)
+		return
+	}
+	s.addToken(token.TokenType_IDENTIFIER)
+}
+
+func isAlpha(c rune) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
+func isAlphaNumeric(c rune) bool {
+	return isAlpha(c) || isDigit(c)
 }
 
 func (s *Scanner) scanString() {
@@ -148,7 +191,7 @@ func (s *Scanner) scanString() {
 
 	if s.isAtEnd() {
 		s.hadError = true
-		s.report(s.line, "", "Unterminated string.")
+		s.report(s.line, "", errors.ErrUnterminatedString)
 		return
 	}
 
@@ -159,15 +202,15 @@ func (s *Scanner) scanString() {
 	s.addTokenWithLiteral(token.TokenType_STRING, value)
 }
 
-func (s *Scanner) ReportError(line int, msg string) {
-	s.report(line, "", msg)
+func (s *Scanner) ReportError(line int, err error) {
+	s.report(line, "", err)
 }
 
 // NOTE:
 // 1. Error reporting should be the first thing to handle
 // given it acts as the first line of defense against hours of debugging
-func (s *Scanner) report(line int, where string, message string) {
-	fmt.Printf("[line %d] Error %s: %s\n", line, where, message)
+func (s *Scanner) report(line int, where string, err error) {
+	fmt.Printf("[line %d] Error %s: %s\n", line, where, err)
 	s.hadError = true
 }
 
@@ -237,7 +280,7 @@ func (s *Scanner) scanNumber() {
 	if err != nil {
 		// Task: Use the built-in error interfrace
 		// instead of plain string literals
-		s.ReportError(s.line, "Invalid number literal")
+		s.ReportError(s.line, errors.ErrInvalidNumberLiteral)
 	}
 	s.addTokenWithLiteral(token.TokenType_NUMBER, num)
 

@@ -62,9 +62,33 @@ const (
 	TokenType_SUPER
 	TokenType_THIS
 	TokenType_TRUE
+	TokenType_VAR
 
 	TokenType_EOF
 )
+
+var keywords map[string]TokenType = map[string]TokenType{
+	"and":    TokenType_AND,
+	"class":  TokenType_CLASS,
+	"else":   TokenType_ELSE,
+	"false":  TokenType_FALSE,
+	"for":    TokenType_FOR,
+	"fun":    TokenType_FUN,
+	"if":     TokenType_IF,
+	"nil":    TokenType_NIL,
+	"or":     TokenType_OR,
+	"print":  TokenType_PRINT,
+	"return": TokenType_RETURN,
+	"super":  TokenType_SUPER,
+	"this":   TokenType_THIS,
+	"true":   TokenType_TRUE,
+	"var":    TokenType_VAR,
+}
+
+func IsKeyword(text string) (TokenType, bool) {
+	t, ok := keywords[text]
+	return t, ok
+}
 
 // NOTE:
 // 1. In go, a const can only be a compile time constant like
